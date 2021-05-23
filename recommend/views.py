@@ -52,9 +52,9 @@ def detail(request, movie_id):
                 q=MyList(user=request.user,movie=movie,watch=update)
                 q.save()
             if update:
-                messages.success(request, "Movie added to your list!")
+                messages.success(request, "Film listeye eklendi!")
             else:
-                messages.success(request, "Movie removed from your list!")
+                messages.success(request, "Film listeden kaldırıldı!")
 
             
         # For rating
@@ -66,7 +66,7 @@ def detail(request, movie_id):
                 q=Myrating(user=request.user,movie=movie,rating=rate)
                 q.save()
 
-            messages.success(request, "Rating has been submitted!")
+            messages.success(request, "Film oylandı!")
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     out = list(Myrating.objects.filter(user=request.user.id).values())
