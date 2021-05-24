@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 class Movie(models.Model):
     title = models.CharField(max_length=200)
     genre = models.CharField(max_length=100)
+    description = models.CharField(max_length=1000, default="")
     movie_logo = models.FileField()
 
     def __str__(self):
