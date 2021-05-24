@@ -9,6 +9,9 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.db.models import Case, When
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
+
 
 # Create your views here.
 
@@ -115,31 +118,74 @@ def recommend(request):
         raise Http404
 
 
-    movie_rating=pd.DataFrame(list(Myrating.objects.all().values()))
-    userRatings = movie_rating.pivot_table(index=['user_id'],columns=['movie_id'],values='rating')
-    userRatings = userRatings.fillna(0,axis=1)
-    corrMatrix = userRatings.corr(method='pearson')
+    movies_table = pd.DataFrame(list(Movie.objects.all().values()))
 
-    for corr in corrMatrix:
-        print(corr)
+    # Define a TF-IDF Vectorizer Object. Remove all english stop words such as 'the', 'a'
+    tfidf = TfidfVectorizer(stop_words='english')
 
-    user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values())).drop(['user_id','id'],axis=1)
-    user_filtered = [tuple(x) for x in user.values]
-    movie_id_watched = [each[0] for each in user_filtered]
+    # Replace NaN with an empty string
+    movies_table = movies_table.fillna('')
 
-    similar_movies = pd.DataFrame()
-    for movie,rating in user_filtered:
-        similar_movies = similar_movies.append(get_similar(movie,rating,corrMatrix),ignore_index = True)
+    print(movies_table['description'])
+    print(movies_table['title'])
 
-    movies_id = list(similar_movies.sum().sort_values(ascending=False).index)
-    movies_id_recommend = [each for each in movies_id if each not in movie_id_watched]
-    preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(movies_id_recommend)])
-    movie_list=list(Movie.objects.filter(id__in = movies_id_recommend).order_by(preserved)[:10])
+    # Construct the required TF-IDF matrix by fitting and transforming the data
+    tfidf_matrix = tfidf.fit_transform(movies_table['description'])
 
-    context = {'movie_list': movie_list}
-    for movie in movie_list:
-        print(movie)
-    return render(request, 'recommend/recommend.html', context)
+    # Output the shape of tfidf_matrix
+    print(tfidf_matrix.shape)
+
+    print(tfidf.get_feature_names()[200:220])
+
+    # Compute the cosine similarity matrix
+    cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+
+    print(cosine_sim.shape)
+
+    print(cosine_sim[1])
+
+    # Construct a reverse map of indices and movie titles
+    indices = pd.Series(movies_table.index, index=movies_table['title']).drop_duplicates()
+
+    print(indices[:10])
+
+
+
+
+
+
+
+
+
+
+
+
+    # movie_rating=pd.DataFrame(list(Myrating.objects.all().values()))
+    # userRatings = movie_rating.pivot_table(index=['user_id'],columns=['movie_id'],values='rating')
+    # userRatings = userRatings.fillna(0,axis=1)
+    # corrMatrix = userRatings.corr(method='pearson')
+    #
+    # for corr in corrMatrix:
+    #     print(corr)
+    #
+    # user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values())).drop(['user_id','id'],axis=1)
+    # user_filtered = [tuple(x) for x in user.values]
+    # movie_id_watched = [each[0] for each in user_filtered]
+    #
+    # similar_movies = pd.DataFrame()
+    # for movie,rating in user_filtered:
+    #     similar_movies = similar_movies.append(get_similar(movie,rating,corrMatrix),ignore_index = True)
+    #
+    # movies_id = list(similar_movies.sum().sort_values(ascending=False).index)
+    # movies_id_recommend = [each for each in movies_id if each not in movie_id_watched]
+    # preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(movies_id_recommend)])
+    # movie_list=list(Movie.objects.filter(id__in = movies_id_recommend).order_by(preserved)[:10])
+    #
+    # context = {'movie_list': movie_list}
+    # for movie in movie_list:
+    #     print(movie)
+    # return render(request, 'recommend/recommend.html', context)
+
 
 
 def signUp(request):
