@@ -121,7 +121,6 @@ def recommend(request):
     corrMatrix = userRatings.corr(method='pearson')
 
     for corr in corrMatrix:
-        assert isinstance(corr, object)
         print(corr)
 
     user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values())).drop(['user_id','id'],axis=1)
