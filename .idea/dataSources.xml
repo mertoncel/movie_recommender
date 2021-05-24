@@ -10,5 +10,12 @@
       <jdbc-url>jdbc:sqlite:C:\Users\Samed\PycharmProjects\movie_recommender\db.sqlite3</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="db" uuid="e05addb5-147c-4b8b-8bf6-9fac4db3c489">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\merto\PycharmProjects\movie_recommender\db.sqlite3</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
