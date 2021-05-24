@@ -11,6 +11,7 @@ from django.db.models import Case, When
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
+
 # süreyya hanımın muhteşem değişimi
 
 # Create your views here.
