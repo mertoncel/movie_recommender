@@ -108,8 +108,7 @@ def watch(request):
 def get_similar(movie_name,rating,corrMatrix):
     similar_ratings = corrMatrix[movie_name]*(rating-2.5)
     similar_ratings = similar_ratings.sort_values(ascending=False)
-    for s_rating in similar_ratings:
-         print(s_rating)
+
     return similar_ratings
 
 def recommend(request):
@@ -151,11 +150,36 @@ def recommend(request):
 
     print(indices[:10])
 
+    # Function that takes in movie title as input and outputs most similar movies
+    def get_recommendations(title, cosine_sim=cosine_sim):
+        # Get the index of the movie that matches the title
+        idx = indices[title]
+
+        # Get the pairwsie similarity scores of all movies with that movie
+        sim_scores = list(enumerate(cosine_sim[idx]))
+
+        # Sort the movies based on the similarity scores
+        sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+
+        # Get the scores of the 10 most similar movies
+        sim_scores = sim_scores[1:5]
+
+        # Get the movie indices
+        movie_indices = [i[0] for i in sim_scores]
+
+        # Return the top 5 most similar movies
+        return movies_table['title'].iloc[movie_indices]
 
 
+    print(get_recommendations('The Godfather'))
 
+    movie_list2 = list(Movie.objects.filter(title__in=get_recommendations("The Godfather")).values())
 
+    print(movie_list2)
 
+    context = {'movie_list2': movie_list2}
+
+    return render(request, 'recommend/recommend.html', context)
 
 
 
@@ -167,14 +191,12 @@ def recommend(request):
     # userRatings = userRatings.fillna(0,axis=1)
     # corrMatrix = userRatings.corr(method='pearson')
     #
-    # for corr in corrMatrix:
-    #     print(corr)
-    #
     # user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values())).drop(['user_id','id'],axis=1)
     # user_filtered = [tuple(x) for x in user.values]
     # movie_id_watched = [each[0] for each in user_filtered]
     #
     # similar_movies = pd.DataFrame()
+    #
     # for movie,rating in user_filtered:
     #     similar_movies = similar_movies.append(get_similar(movie,rating,corrMatrix),ignore_index = True)
     #
@@ -184,8 +206,13 @@ def recommend(request):
     # movie_list=list(Movie.objects.filter(id__in = movies_id_recommend).order_by(preserved)[:10])
     #
     # context = {'movie_list': movie_list}
-    # for movie in movie_list:
-    #     print(movie)
+    #
+    # print("asfasgasg")
+    # print(movie_list)
+    #
+    #
+    #
+    #
     # return render(request, 'recommend/recommend.html', context)
 
 
