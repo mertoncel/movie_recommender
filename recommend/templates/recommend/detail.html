@@ -24,8 +24,10 @@
         </div>
         <!-- Right Movie Info -->
         <div class="col-sm-offset-1 col-sm-4 col-md-4">
-            <h1 style="color:#fff">{{movies.title}}</h1>
-            <h3><small>Tür: {{movies.genre}}</small></h3>
+            <h1 style="color:#000">{{movies.title}}</h1>
+            <h3 style="color:#000">Tür: {{movies.genre}}</h3>
+            <h5 style="color:#000">Tür: {{movies.description}}</h5>
+
 
             <div class="col-sm-offset-0 col-sm-8">
                 <form class="form-horizontal" role="search" method="post" action="{% url 'detail' movies.id %}" onsubmit="return validateForm()"  name="ratingForm">
@@ -62,7 +64,7 @@
                             <div class="row">
                                 <div class="col-lg-14">
                                     <div class="star-rating">
-                                        <span>Listeme Ekle  </span>
+                                        <span>Listeme Ekle</span>
                                         {% if update %}
                                         <input type="checkbox" name="watch" checked>
                                         <input type="submit" class="button" value="Kaldır" name="watch">
