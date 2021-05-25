@@ -45,13 +45,12 @@
                         <a href="{% url 'detail' movie.id %}">
                             <img src="{{ movie.movie_logo.url}}" class="img-responsive" style="border-radius: 22px 22px 22px 22px;">
                         </a>
-                        <!-- <h5>{{movie.genre}}</h5> -->
+                        <center><h5>{{movie.genre}}</h5></center>
                     </div>
                 </div>
                 {% endfor %}
                 {% endif %}
         </div>
-
 </div>
 
 

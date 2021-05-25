@@ -11,9 +11,7 @@ from django.db.models import Case, When
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
-#samedin degisimi
 
-# mertin muhteşem değişimi
 
 # Create your views here.
 
@@ -60,7 +58,7 @@ def detail(request, movie_id):
             else:
                 messages.success(request, "Film listeden kaldırıldı!")
 
-            
+
 
         else:
             rate = request.POST['rating']
@@ -105,12 +103,6 @@ def watch(request):
     return render(request, 'recommend/watch.html', {'movies': movies})
 
 
-def get_similar(movie_name,rating,corrMatrix):
-    similar_ratings = corrMatrix[movie_name]*(rating-2.5)
-    similar_ratings = similar_ratings.sort_values(ascending=False)
-
-    return similar_ratings
-
 def recommend(request):
 
     if not request.user.is_authenticated:
@@ -121,57 +113,55 @@ def recommend(request):
 
     movies_table = pd.DataFrame(list(Movie.objects.all().values()))
 
-    # Define a TF-IDF Vectorizer Object. Remove all english stop words such as 'the', 'a'
+    # TF-IDF vectorizer objesi oluştur. and, is, the gibi ingilizce kelimeleri temizle.
     tfidf = TfidfVectorizer(stop_words='english')
 
-    # Replace NaN with an empty string
+    # NaN alanları boş string ile değiştir.
     movies_table = movies_table.fillna('')
 
     print(movies_table['description'])
     print(movies_table['title'])
 
-    # Construct the required TF-IDF matrix by fitting and transforming the data
+    # Verilere fitting ve transforming yaparak tfidf matrisini oluştur.
     tfidf_matrix = tfidf.fit_transform(movies_table['description'])
 
-    # Output the shape of tfidf_matrix
+    # tf-idf matrisi çıktısı.
     print(tfidf_matrix.shape)
 
+    # bir takım kelimeleri listele
     print(tfidf.get_feature_names()[200:220])
 
-    # Compute the cosine similarity matrix
+    # kosinüs benzerliği matrisini oluştur.
     cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
 
     print(cosine_sim.shape)
 
     print(cosine_sim[1])
 
-    # Construct a reverse map of indices and movie titles
+    # reverse mapping yap
     indices = pd.Series(movies_table.index, index=movies_table['title']).drop_duplicates()
 
     print(indices[:10])
 
-    # Function that takes in movie title as input and outputs most similar movies
+    # benzer filmleri bulma fonksiyonu
     def get_recommendations(title, cosine_sim=cosine_sim):
-        # Get the index of the movie that matches the title
+        # ilgili filmin indexini al
         idx = indices[title]
 
-        # Get the pairwsie similarity scores of all movies with that movie
+        # bu filme benzer tüm filmlerin pairwise similarity puanlarını al.
         sim_scores = list(enumerate(cosine_sim[idx]))
 
-        # Sort the movies based on the similarity scores
+        # filmleri benzerliğe göre sırala
         sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
 
-        # Get the scores of the 10 most similar movies
-        sim_scores = sim_scores[1:5]
+        # benzer 5 filmi al.
+        sim_scores = sim_scores[1:6]
 
-        # Get the movie indices
+        # filmin indislerini al
         movie_indices = [i[0] for i in sim_scores]
 
-        # Return the top 5 most similar movies
+        # benzer filmleri döndür.
         return movies_table['title'].iloc[movie_indices]
-
-
-    print(get_recommendations('The Godfather'))
 
     movie_list2 = list(Movie.objects.filter(title__in=get_recommendations("Mandariinid")).values())
 
@@ -180,6 +170,13 @@ def recommend(request):
     context = {'movie_list2': movie_list2}
 
     return render(request, 'recommend/recommend.html', context)
+
+
+def get_similar(movie_name,rating,corrMatrix):
+    similar_ratings = corrMatrix[movie_name]*(rating-2.5)
+    similar_ratings = similar_ratings.sort_values(ascending=False)
+
+    return similar_ratings
 
 
 def recommend2(request):
@@ -210,7 +207,6 @@ def recommend2(request):
 
     context = {'movie_list': movie_list}
 
-    print("asfasgasg")
     print(movie_list)
 
     return render(request, 'recommend/recommend2.html', context)
