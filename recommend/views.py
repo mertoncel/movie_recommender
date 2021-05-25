@@ -173,7 +173,7 @@ def recommend(request):
 
     print(get_recommendations('The Godfather'))
 
-    movie_list2 = list(Movie.objects.filter(title__in=get_recommendations("The Godfather")).values())
+    movie_list2 = list(Movie.objects.filter(title__in=get_recommendations("Mandariinid")).values())
 
     print(movie_list2)
 
@@ -182,38 +182,38 @@ def recommend(request):
     return render(request, 'recommend/recommend.html', context)
 
 
+def recommend2(request):
 
+    if not request.user.is_authenticated:
+        return redirect("login")
+    if not request.user.is_active:
+        raise Http404
 
+    movie_rating=pd.DataFrame(list(Myrating.objects.all().values()))
+    userRatings = movie_rating.pivot_table(index=['user_id'],columns=['movie_id'],values='rating')
+    userRatings = userRatings.fillna(0,axis=1)
+    corrMatrix = userRatings.corr(method='pearson')
 
+    user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values())).drop(['user_id','id'],axis=1)
+    user_filtered = [tuple(x) for x in user.values]
+    movie_id_watched = [each[0] for each in user_filtered]
 
-    # movie_rating=pd.DataFrame(list(Myrating.objects.all().values()))
-    # userRatings = movie_rating.pivot_table(index=['user_id'],columns=['movie_id'],values='rating')
-    # userRatings = userRatings.fillna(0,axis=1)
-    # corrMatrix = userRatings.corr(method='pearson')
-    #
-    # user = pd.DataFrame(list(Myrating.objects.filter(user=request.user).values())).drop(['user_id','id'],axis=1)
-    # user_filtered = [tuple(x) for x in user.values]
-    # movie_id_watched = [each[0] for each in user_filtered]
-    #
-    # similar_movies = pd.DataFrame()
-    #
-    # for movie,rating in user_filtered:
-    #     similar_movies = similar_movies.append(get_similar(movie,rating,corrMatrix),ignore_index = True)
-    #
-    # movies_id = list(similar_movies.sum().sort_values(ascending=False).index)
-    # movies_id_recommend = [each for each in movies_id if each not in movie_id_watched]
-    # preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(movies_id_recommend)])
-    # movie_list=list(Movie.objects.filter(id__in = movies_id_recommend).order_by(preserved)[:10])
-    #
-    # context = {'movie_list': movie_list}
-    #
-    # print("asfasgasg")
-    # print(movie_list)
-    #
-    #
-    #
-    #
-    # return render(request, 'recommend/recommend.html', context)
+    similar_movies = pd.DataFrame()
+
+    for movie,rating in user_filtered:
+        similar_movies = similar_movies.append(get_similar(movie,rating,corrMatrix),ignore_index = True)
+
+    movies_id = list(similar_movies.sum().sort_values(ascending=False).index)
+    movies_id_recommend = [each for each in movies_id if each not in movie_id_watched]
+    preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(movies_id_recommend)])
+    movie_list=list(Movie.objects.filter(id__in = movies_id_recommend).order_by(preserved)[:10])
+
+    context = {'movie_list': movie_list}
+
+    print("asfasgasg")
+    print(movie_list)
+
+    return render(request, 'recommend/recommend2.html', context)
 
 
 
